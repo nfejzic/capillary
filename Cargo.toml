@@ -2,6 +2,10 @@
 name = "capillary"
 version = "0.1.0"
 edition = "2021"
+description = "Library for HashMap-like storage of key-value pairs, but allowing for step-by-step (partial) search of value."
+repository = "https://github.com/nfejzic/capillary"
+license = "MIT"
+license-file = "./LICENSE.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
