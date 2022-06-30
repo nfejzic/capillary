@@ -156,6 +156,22 @@ where
     }
 }
 
+impl<KeyParts, K, V> FromIterator<(KeyParts, V)> for Dictionary<K, V>
+where
+    KeyParts: IntoIterator<Item = K>,
+    K: Hash + Eq,
+{
+    fn from_iter<I: IntoIterator<Item = (KeyParts, V)>>(iter: I) -> Self {
+        let mut dictionary = Self::default();
+
+        for (key, value) in iter {
+            dictionary.insert(key, value);
+        }
+
+        dictionary
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::Dictionary;
