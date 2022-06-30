@@ -208,4 +208,20 @@ mod tests {
 
         assert_eq!(val.as_deref(), Some(&"Hello"));
     }
+
+    #[test]
+    fn collect() {
+        let input = [([":", "D"], "Hello")];
+
+        let mut d: Dictionary<_, _> = input.into_iter().collect();
+
+        assert_eq!(d.len(), 1);
+
+        let _ = d.partial_find(&":");
+        let _ = d.partial_find(&"D");
+
+        let val = d.try_resolve_path();
+
+        assert_eq!(val.as_deref(), Some(&"Hello"));
+    }
 }
