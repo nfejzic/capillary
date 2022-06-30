@@ -1,3 +1,14 @@
+//! capillary introduces a [`Dictionary`] data structure. It's used for cases where search by
+//! partial key is needed.
+//!
+//! In particular useful when performing some kind of find and replace in some data.
+//!
+//! i.e. one might want to perform find and replace in a string. With `capillary::Dictionary` it is
+//! possible to keep starting a search, and `Dictionary` will be in __default__ state until some
+//! character is part of a valid key. As long as the following characters are part of a valid key,
+//! the state of `Dictionary` will be set to some part of the `key` towards the `value`. It is then
+//! possible to test if some `value` is reached, and return it as soon as it gets hit.
+
 use std::{
     cell::{Ref, RefCell},
     collections::HashMap,
@@ -8,8 +19,11 @@ use std::{
 
 type NodesMap<K, V> = HashMap<K, Rc<RefCell<Node<K, V>>>>;
 
+/// Error indicating that some key part lead to invalid [`Dictionary`] state, thus resetting the
+/// [`Dictionary`] to the default state.
 pub struct InvalidKeyPartErr;
 
+/// Data structure for storing key-value pairs, with partial key lookup feature.
 #[derive(Debug, Clone)]
 pub struct Dictionary<K, V>
 where
@@ -60,22 +74,27 @@ impl<K, V> Dictionary<K, V>
 where
     K: Hash + PartialEq + Eq,
 {
+    /// Creates a new empty `Dictionary`.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Checks whether this `Dictionary` is empty - contains no key-value pairs.
     pub fn is_empty(&self) -> bool {
         self.len == 0
     }
 
+    /// Returns the number of key-value pairs contained in this `Dictionary`.
     pub fn len(&self) -> usize {
         self.len
     }
 
+    /// Returns the current depth along the key path. Returns 0 in default state.
     pub fn depth(&self) -> usize {
         self.depth
     }
 
+    /// Inserts a key-value pair into the `Dictionary`.
     pub fn insert<I>(&mut self, word: I, substitution: V)
     where
         I: IntoIterator<Item = K>,
@@ -117,6 +136,9 @@ where
         }
     }
 
+    /// Moves along some key path if and only if the given key part is reachable from current
+    /// state. If the given key part is not reachable from current state, the state of `Dictionary`
+    /// is reset to the default state, and `Err` is returned.
     pub fn partial_find(&mut self, code: &K) -> Result<(), InvalidKeyPartErr> {
         match self.curr_node.take() {
             Some(node) => match node.borrow().nodes.get(code) {
@@ -144,6 +166,8 @@ where
         Ok(())
     }
 
+    /// Tries to retrieve value associated with key constructed from key parts so far provided with
+    /// [`Dictionary::partial_find`].
     pub fn try_resolve_path(&self) -> Option<impl Deref<Target = V> + '_> {
         let curr_node = self.curr_node.as_ref()?;
         if curr_node.borrow().data.is_some() {
