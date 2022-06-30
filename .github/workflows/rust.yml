@@ -1,4 +1,4 @@
-name: UniMarkup Dev Workflow
+name: Capillary CI
 
 on:
   push:
