@@ -1,30 +1,65 @@
 use std::{
     cell::{Ref, RefCell},
     collections::HashMap,
+    hash::Hash,
     ops::Deref,
     rc::Rc,
 };
 
-type NodesMap = HashMap<String, Rc<RefCell<Node>>>;
+type NodesMap<K, V> = HashMap<K, Rc<RefCell<Node<K, V>>>>;
 
 pub struct InvalidKeyPartErr;
 
-#[derive(Default, Debug, PartialEq, Eq, Clone)]
-pub struct Dictionary {
+#[derive(Debug, Clone)]
+pub struct Dictionary<K, V>
+where
+    K: Hash + PartialEq + Eq,
+{
     len: usize,
     depth: usize,
-    path: String,
-    nodes: NodesMap,
-    curr_node: Option<Rc<RefCell<Node>>>,
+    nodes: NodesMap<K, V>,
+    curr_node: Option<Rc<RefCell<Node<K, V>>>>,
 }
 
-#[derive(Debug, Default, PartialEq, Eq, Clone)]
-struct Node {
-    subst: Option<String>,
-    nodes: NodesMap,
+#[derive(Debug, Clone)]
+struct Node<K, V>
+where
+    K: Hash,
+{
+    data: Option<V>,
+    nodes: NodesMap<K, V>,
 }
 
-impl Dictionary {
+impl<K, V> Default for Node<K, V>
+where
+    K: Hash,
+{
+    fn default() -> Self {
+        Self {
+            data: None,
+            nodes: HashMap::new(),
+        }
+    }
+}
+
+impl<K, V> Default for Dictionary<K, V>
+where
+    K: Hash + Eq,
+{
+    fn default() -> Self {
+        Self {
+            len: Default::default(),
+            depth: Default::default(),
+            nodes: Default::default(),
+            curr_node: Default::default(),
+        }
+    }
+}
+
+impl<K, V> Dictionary<K, V>
+where
+    K: Hash + PartialEq + Eq,
+{
     pub fn new() -> Self {
         Self::default()
     }
@@ -37,68 +72,83 @@ impl Dictionary {
         self.len
     }
 
-    pub fn insert(&mut self, word: &'static str, substitution: &str) {
-        let mut curr_node: Option<Rc<RefCell<Node>>> = None;
-        let mut iter = word.chars().peekable();
+    pub fn depth(&self) -> usize {
+        self.depth
+    }
 
-        while let Some(char) = iter.next() {
+    pub fn insert<I>(&mut self, word: I, substitution: V)
+    where
+        I: IntoIterator<Item = K>,
+    {
+        let mut curr_node: Option<Rc<RefCell<Node<K, V>>>> = None;
+        let mut iter = word.into_iter().peekable();
+
+        while let Some(key_part) = iter.next() {
             match curr_node {
                 Some(node) => {
                     let mut new_node = node.borrow_mut();
-                    let created_node =
-                        new_node.nodes.entry(String::from(char)).or_insert_with(|| {
-                            if iter.peek().is_some() {
-                                Default::default()
-                            } else {
-                                self.len += 1;
 
-                                Rc::new(
-                                    Node {
-                                        subst: Some(String::from(substitution)),
-                                        ..Default::default()
-                                    }
-                                    .into(),
-                                )
+                    if iter.peek().is_none() {
+                        self.len += 1;
+
+                        let child = Rc::new(
+                            Node {
+                                data: Some(substitution),
+                                ..Default::default()
                             }
-                        });
+                            .into(),
+                        );
 
+                        new_node.nodes.entry(key_part).or_insert(child);
+
+                        break;
+                    }
+
+                    let child = Default::default();
+                    let created_node = new_node.nodes.entry(key_part).or_insert(child);
                     curr_node = Some(Rc::clone(created_node));
                 }
                 None => {
                     curr_node = Some(Rc::clone(
-                        self.nodes
-                            .entry(String::from(char))
-                            .or_insert_with(Default::default),
+                        self.nodes.entry(key_part).or_insert_with(Default::default),
                     ));
                 }
             }
         }
     }
 
-    pub fn curr_depth(&self) -> usize {
-        self.path.len()
-    }
-
-    pub fn partial_find(&mut self, code: &str) -> Result<(), InvalidKeyPartErr> {
+    pub fn partial_find(&mut self, code: &K) -> Result<(), InvalidKeyPartErr> {
         match self.curr_node.take() {
             Some(node) => match node.borrow().nodes.get(code) {
-                Some(new_node) => self.curr_node = Some(Rc::clone(new_node)),
-                None => return Err(InvalidKeyPartErr),
+                Some(new_node) => {
+                    self.depth += 1;
+                    self.curr_node = Some(Rc::clone(new_node))
+                }
+                None => {
+                    self.depth = 0;
+                    return Err(InvalidKeyPartErr);
+                }
             },
             None => match self.nodes.get(code) {
-                Some(new_node) => self.curr_node = Some(Rc::clone(new_node)),
-                None => return Err(InvalidKeyPartErr),
+                Some(new_node) => {
+                    self.depth += 1;
+                    self.curr_node = Some(Rc::clone(new_node))
+                }
+                None => {
+                    self.depth = 0;
+                    return Err(InvalidKeyPartErr);
+                }
             },
         }
 
         Ok(())
     }
 
-    pub fn try_resolve_path(&self) -> Option<impl Deref<Target = str> + '_> {
+    pub fn try_resolve_path(&self) -> Option<impl Deref<Target = V> + '_> {
         let curr_node = self.curr_node.as_ref()?;
-        if curr_node.borrow().subst.is_some() {
+        if curr_node.borrow().data.is_some() {
             Some(Ref::map(curr_node.borrow(), |node| {
-                node.subst.as_ref().unwrap().as_str()
+                node.data.as_ref().unwrap()
             }))
         } else {
             None
