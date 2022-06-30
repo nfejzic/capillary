@@ -164,7 +164,7 @@ mod tests {
     fn insert() {
         let mut d = Dictionary::new();
 
-        d.insert(":D", "Hello");
+        d.insert([":", "D"], "Hello");
 
         assert_eq!(d.len(), 1);
     }
@@ -173,8 +173,8 @@ mod tests {
     fn insert_multiple() {
         let mut d = Dictionary::new();
 
-        d.insert(":D", "Hello");
-        d.insert(":)", "There");
+        d.insert([":", "D"], "Hello");
+        d.insert([":", ")"], "There");
 
         assert_eq!(d.len(), 2);
     }
@@ -183,13 +183,13 @@ mod tests {
     fn find_by_partial_codes() {
         let mut d = Dictionary::new();
 
-        d.insert(":D", "Hello");
+        d.insert([":", "D"], "Hello");
 
-        let _ = d.partial_find(":");
-        let _ = d.partial_find("D");
+        let _ = d.partial_find(&":");
+        let _ = d.partial_find(&"D");
 
         let val = d.try_resolve_path();
 
-        assert_eq!(val.as_deref(), Some("Hello"));
+        assert_eq!(val.as_deref(), Some(&"Hello"));
     }
 }
