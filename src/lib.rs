@@ -27,7 +27,7 @@ pub struct InvalidKeyPartErr;
 #[derive(Debug, Clone)]
 pub struct Dictionary<K, V>
 where
-    K: Hash + PartialEq + Eq,
+    K: Hash + Eq,
 {
     len: usize,
     depth: usize,
