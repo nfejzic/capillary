@@ -38,7 +38,7 @@ where
 #[derive(Debug, Clone)]
 struct Node<K, V>
 where
-    K: Hash,
+    K: Eq + Hash,
 {
     data: Option<V>,
     nodes: NodesMap<K, V>,
@@ -46,7 +46,7 @@ where
 
 impl<K, V> Default for Node<K, V>
 where
-    K: Hash,
+    K: Eq + Hash,
 {
     fn default() -> Self {
         Self {
