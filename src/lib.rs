@@ -95,12 +95,12 @@ where
     }
 
     /// Inserts a key-value pair into the `Dictionary`.
-    pub fn insert<I>(&mut self, word: I, substitution: V)
+    pub fn insert<W>(&mut self, key: W, value: V)
     where
-        I: IntoIterator<Item = K>,
+        W: IntoIterator<Item = K>,
     {
         let mut curr_node: Option<Rc<RefCell<Node<K, V>>>> = None;
-        let mut iter = word.into_iter().peekable();
+        let mut iter = key.into_iter().peekable();
 
         while let Some(key_part) = iter.next() {
             match curr_node {
@@ -112,7 +112,7 @@ where
 
                         let child = Rc::new(
                             Node {
-                                data: Some(substitution),
+                                data: Some(value),
                                 ..Default::default()
                             }
                             .into(),
