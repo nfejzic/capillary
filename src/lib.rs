@@ -248,10 +248,33 @@ mod tests {
     use crate::Dictionary;
 
     #[test]
+    fn insert_slice() {
+        let mut d = Dictionary::new();
+
+        let (key, value) = (&[":", "D"], "Hello");
+
+        d.insert(key, value);
+        assert_eq!(d.len(), 1);
+
+        assert_eq!(d.get(&[":", "D"]), Some("Hello"));
+    }
+
+    #[test]
+    fn string_val() {
+        let mut d = Dictionary::new();
+
+        let key = ":D";
+
+        d.insert(key.chars(), String::from("Hello"));
+
+        assert_eq!(d.get(key.chars()), Some(String::from("Hello")));
+    }
+
+    #[test]
     fn insert() {
         let mut d = Dictionary::new();
 
-        d.insert([":", "D"], "Hello");
+        d.insert(":D".chars(), "Hello");
 
         assert_eq!(d.len(), 1);
     }
@@ -260,8 +283,8 @@ mod tests {
     fn insert_multiple() {
         let mut d = Dictionary::new();
 
-        d.insert([":", "D"], "Hello");
-        d.insert([":", ")"], "There");
+        d.insert(":D".chars(), "Hello");
+        d.insert(":)".chars(), "There");
 
         assert_eq!(d.len(), 2);
     }
@@ -270,29 +293,54 @@ mod tests {
     fn find_by_partial_codes() {
         let mut d = Dictionary::new();
 
-        d.insert([":", "D"], "Hello");
+        d.insert(":D".chars(), "Hello");
 
-        let _ = d.partial_find(&":");
-        let _ = d.partial_find(&"D");
+        let _ = d.partial_find(&':');
+        let _ = d.partial_find(&'D');
 
-        let val = d.try_resolve_path();
+        let val = d.try_resolve();
 
         assert_eq!(val.as_deref(), Some(&"Hello"));
     }
 
     #[test]
     fn collect() {
-        let input = [([":", "D"], "Hello")];
+        let input = [(":D".chars(), "Hello")];
 
         let mut d: Dictionary<_, _> = input.into_iter().collect();
 
         assert_eq!(d.len(), 1);
 
-        let _ = d.partial_find(&":");
-        let _ = d.partial_find(&"D");
+        let _ = d.partial_find(&':');
+        let _ = d.partial_find(&'D');
 
-        let val = d.try_resolve_path();
+        let val = d.try_resolve();
 
         assert_eq!(val.as_deref(), Some(&"Hello"));
+    }
+
+    #[test]
+    fn insert_while_in_find() {
+        let mut d = Dictionary::new();
+
+        d.insert(":D".chars(), "Hello");
+
+        let _ = d.partial_find(&':');
+
+        d.insert(":)".chars(), "Aha");
+
+        assert_eq!(d.len(), 2);
+    }
+
+    #[test]
+    fn insert_while_ref_to_value() {
+        let mut d = Dictionary::new();
+
+        d.insert(":D".chars(), "Hello");
+
+        let _ = d.partial_find(&':');
+        let _ = d.partial_find(&'D');
+
+        d.insert(":)".chars(), "Hi there");
     }
 }
