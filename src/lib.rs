@@ -168,7 +168,7 @@ where
 
     /// Tries to retrieve value associated with key constructed from key parts so far provided with
     /// [`Dictionary::partial_find`].
-    pub fn try_resolve_path(&self) -> Option<impl Deref<Target = V> + '_> {
+    pub fn try_resolve(&self) -> Option<impl Deref<Target = V> + '_> {
         let curr_node = self.curr_node.as_ref()?;
         if curr_node.borrow().data.is_some() {
             Some(Ref::map(curr_node.borrow(), |node| {
