@@ -178,6 +178,53 @@ where
             None
         }
     }
+
+    /// Returns the value paired with the given key. Returns None if such value does not exist.
+    ///
+    /// Does not return reference to the value, clones it instead. Returning the reference involves
+    /// mutating internal state. In order to avoid that requirement, value is cloned so that the
+    /// function can be called on immutable references too.
+    pub fn get<W>(&self, key: W) -> Option<V>
+    where
+        W: IntoIterator<Item = K>,
+        V: Clone,
+    {
+        let mut iter = key.into_iter().peekable();
+        let first_key_part = iter.next()?;
+
+        let mut curr_node: Rc<RefCell<_>> = Rc::clone(self.nodes.get(&first_key_part)?);
+
+        for ref key_part in iter {
+            let new_node = Rc::clone(curr_node.borrow().nodes.get(key_part)?);
+            curr_node = new_node;
+        }
+
+        let node = curr_node.borrow();
+        node.data.as_ref().cloned()
+    }
+
+    /// Returns reference to the value paired with the given key. Returns None if such value does
+    /// not exist.
+    ///
+    /// Resets the current search state of dictionary. This means that any started partial search
+    /// will be reset.
+    pub fn get_ref<W>(&mut self, key: W) -> Option<impl Deref<Target = V> + '_>
+    where
+        W: IntoIterator<Item = K>,
+    {
+        let temp = self.curr_node.take();
+
+        let iter = key.into_iter();
+
+        for ref key_part in iter {
+            if self.partial_find(key_part).is_err() {
+                self.curr_node = temp;
+                return None;
+            }
+        }
+
+        self.try_resolve()
+    }
 }
 
 impl<KeyParts, K, V> FromIterator<(KeyParts, V)> for Dictionary<K, V>
