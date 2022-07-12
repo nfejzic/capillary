@@ -9,7 +9,7 @@
 //! the state of `Dictionary` will be set to some part of the `key` towards the `value`. It is then
 //! possible to test if some `value` is reached, and return it as soon as it gets hit.
 
-pub mod dict;
+mod dict;
 
 pub use dict::*;
 
