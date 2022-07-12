@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://www.github.com/nfejzic/capillary/compare/v0.3.0...v0.4.0) (2022-07-12)
+
+
+### Features
+
+* reimplement `Dictionary` with graphs ([563b542](https://www.github.com/nfejzic/capillary/commit/563b542e96fbb8c7f0625e23e75c3cd1ef1656a6))
+* replace `Dictionary` implementation ([23e80c0](https://www.github.com/nfejzic/capillary/commit/23e80c0a948e861de428ea4a1660ab2612548ddc))
+
 ## [0.3.0](https://www.github.com/nfejzic/capillary/compare/v0.2.0...v0.3.0) (2022-07-10)
 
 
