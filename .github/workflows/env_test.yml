@@ -16,6 +16,16 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Set deploy status in progress
+        uses: LouisBrunner/checks-action@v1.6.1
+        if: always()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Set check status in progress
+          status: in_progress
+
+      - name: Prepare environment
+        run: echo "DEPLOY=false"
     
       - uses: actions/checkout@v2
       - name: Check if deployment is requested
@@ -27,14 +37,6 @@ jobs:
       - name: Check if pull request
         if: github.event_name == 'pull_request'
         run: echo "RUN_NAME=${{ github.ref }}" >> $GITHUB_ENV
-
-      - name: Set deploy status in progress
-        uses: LouisBrunner/checks-action@v1.6.1
-        if: env.DEPLOY == 'false'
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: Set check status in progress
-          status: in_progress
 
       - name: Run deployment
         id: deploy
