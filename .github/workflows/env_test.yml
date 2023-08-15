@@ -2,8 +2,8 @@ name: Environment test
 
 on:
   pull_request:
-    types: [ "labeled" ]
     branches: [ "main" ]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -26,3 +26,4 @@ jobs:
 
     steps:
     - name: Build not requested
+      run: echo "Build not requested. Add label 'custom-label' to PR to build the app."
