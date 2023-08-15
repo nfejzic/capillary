@@ -1,9 +1,9 @@
-name: Environment test
+name: Build app when labeled with 'custom-label'
 
 on:
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch:
+    types: [ "labeled" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -19,11 +19,3 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
-
-  ok:
-    if: github.event.label.name != 'custom-label' && !contains(github.event.pull_request.labels.*.name, 'custom-label')
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Build not requested
-      run: echo "Build not requested. Add label 'custom-label' to PR to build the app."
