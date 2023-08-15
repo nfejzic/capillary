@@ -1,29 +1,43 @@
-name: Environment test
+name: Deploy on request (comment 'deploy dev')
+run-name: ${{ github.head_ref }} (${{ github.actor }}) 🚀
+
+concurrency:
+  # group: rerun_concurrency_${{ github.event.pull_request.number }}
+  group: spelling-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 on:
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-env:
-  CARGO_TERM_COLOR: always
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
 
 jobs:
-  build:
-    if: github.event.label.name == 'custom-label' || contains(github.event.pull_request.labels.*.name, 'custom-label')
+  tests:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the app
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
-
-  ok:
-    if: github.event.label.name != 'custom-label' && !contains(github.event.pull_request.labels.*.name, 'custom-label')
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Build not requested
-      run: echo "Build not requested. Add label 'custom-label' to PR to build the app."
+      - uses: actions/checkout@v2
+      - name: Check if rerun is requested
+        if: github.event_name == 'issue_comment' && github.event.issue
+        env:
+          COMMENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: echo "DEPLOY=${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, 'deploy dev') && contains(github.event.issue.number, env.COMMENT_ISSUE_NUMBER) }}" >> $GITHUB_ENV
+      - name: Check if pull request
+        if: github.event_name == 'pull_request'
+        run: echo "RUN_NAME=${{ github.ref }}" >> $GITHUB_ENV
+      - name: Run deployment
+        if: env.DEPLOY == 'true'
+        run: echo "Running deployment of dev version"
+        env:
+          RUN_ID: ${{ github.run_id }}
+      - name: Print head ref
+        if: github.event_name == 'pull_request'
+        run: echo "HEAD_REF=${{ github.head_ref }}" >> $GITHUB_ENV
+      - name: Print run ID
+        if: always()
+        run: echo "RUN_ID=${{ github.run_id }}"
+      - name: Print environment variables
+        if: always()
+        run: |
+          echo "RERUN=$RERUN"
+          echo "RUN_NAME=$RUN_NAME"
