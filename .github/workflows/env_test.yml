@@ -3,18 +3,19 @@ name: Environment test
 on:
   pull_request:
     types: [ "labeled" ]
+    branches: [ "main" ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-    if: ${{ github.event.label.name == 'custom-label' }}
+    if: github.event.label.name == 'custom-label' || contains(github.event.pull_request.labels.*.name, 'custom-label')
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
+    - name: Build the app
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
