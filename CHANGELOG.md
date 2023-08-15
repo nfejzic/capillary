@@ -1,5 +1,16 @@
 # Changelog
 
+### [0.4.1](https://www.github.com/nfejzic/capillary/compare/v0.4.0...v0.4.1) (2023-08-15)
+
+
+### CI
+
+* add waitable PR runs (maybe?) ([fd5f435](https://www.github.com/nfejzic/capillary/commit/fd5f435d7b0565b90f1aa490a1c5ac6c5725c344))
+* echo a message when PR app build does not run. ([76138e2](https://www.github.com/nfejzic/capillary/commit/76138e20fb4ea4fe3d49e2db57c0de9d63f13b44))
+* run workflow on 'deploy dev' comment on PR ([89c3f02](https://www.github.com/nfejzic/capillary/commit/89c3f02a1491c0a781c0f33acdbcf018a2a8b1f0))
+* update ci to report build ok if label not present on a PR ([04039ea](https://www.github.com/nfejzic/capillary/commit/04039ead4e5a6a6808e3ecab055a6505cdf8ed73))
+* update conditional ci to run on label 'custom-label' ([f152510](https://www.github.com/nfejzic/capillary/commit/f152510bfc84ff59479223bef8cd986e9e0ee342))
+
 ## [0.4.0](https://www.github.com/nfejzic/capillary/compare/v0.3.0...v0.4.0) (2022-07-12)
 
 
