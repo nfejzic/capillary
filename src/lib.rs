@@ -10,11 +10,13 @@
 //! possible to test if some `value` is reached, and return it as soon as it gets hit.
 
 mod dict;
+pub mod vec_dict;
 
 pub use dict::*;
 
 /// Error indicating that some key part lead to invalid [`Dictionary`] state, thus resetting the
 /// [`Dictionary`] to the default state.
+#[derive(Debug)]
 pub struct InvalidKeyPartErr;
 
 impl<KeyParts, K, V> FromIterator<(KeyParts, V)> for Dictionary<K, V>

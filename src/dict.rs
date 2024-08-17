@@ -61,11 +61,9 @@ where
     where
         W: IntoIterator<Item = K>,
     {
-        let mut iter = key.into_iter().peekable();
-
         let mut curr_node = self.root;
 
-        while let Some(key_part) = iter.next() {
+        for key_part in key.into_iter() {
             match self
                 .graph
                 .edges(curr_node)
@@ -74,20 +72,16 @@ where
                 Some(edge) => {
                     curr_node = edge.target();
                 }
-                None => match iter.peek() {
-                    Some(_) => {
-                        let new_node = self.graph.add_node(None);
-                        self.graph.add_edge(curr_node, new_node, key_part);
-                        curr_node = new_node;
-                    }
-                    None => {
-                        // this node contains the value
-                        let node_with_val = self.graph.add_node(Some(value));
-                        self.graph.add_edge(curr_node, node_with_val, key_part);
-                        break;
-                    }
-                },
+                None => {
+                    let new_node = self.graph.add_node(None);
+                    self.graph.add_edge(curr_node, new_node, key_part);
+                    curr_node = new_node;
+                }
             }
+        }
+
+        if let Some(inner) = self.graph.node_weight_mut(curr_node) {
+            *inner = Some(value);
         }
     }
 
@@ -117,11 +111,9 @@ where
     where
         W: IntoIterator<Item = K>,
     {
-        let mut iter = key.into_iter().peekable();
-
         let mut curr_node = self.root;
 
-        while let Some(key_part) = iter.next() {
+        for key_part in key.into_iter() {
             match self
                 .graph
                 .edges(curr_node)
@@ -129,16 +121,12 @@ where
             {
                 Some(edge) => {
                     curr_node = edge.target();
-
-                    if iter.peek().is_none() {
-                        return Some(curr_node);
-                    }
                 }
                 None => return None,
             }
         }
 
-        None
+        Some(curr_node)
     }
 
     /// Creates a [`Lookup`] into the [`Dictionary`] used for searching inside of the dictionary.

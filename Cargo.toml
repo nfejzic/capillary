@@ -10,3 +10,10 @@ license = "MIT"
 
 [dependencies]
 petgraph = { version = "0.6.2", default-features = false, features = [ "stable_graph" ]}
+
+[dev-dependencies]
+criterion = { version = "0.3", features = [ "html_reports" ] }
+
+[[bench]]
+name = "search_comp"
+harness = false
