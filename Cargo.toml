@@ -1,6 +1,6 @@
 [package]
 name = "capillary"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 description = "Library for HashMap-like storage of key-value pairs, but allowing for step-by-step (partial) search of value."
 repository = "https://github.com/nfejzic/capillary"
